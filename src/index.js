@@ -1,6 +1,5 @@
 import { GraphQLServer } from "graphql-yoga";
 import uuidv4 from "uuid/v4";
-import { AddArgumentsAsVariables } from "graphql-tools";
 
 // Scalar types - String, Boolean, Int, Float, ID
 
@@ -89,6 +88,7 @@ const typeDefs = `
       createUser(data: CreateUserInput!): User!
       deleteUser(id: ID!): User!
       createPost(data: CreatePostInput!): Post!
+      deletePost(id: ID!): Post!
       createComment(data: CreateCommentInput!): Comment!
     }
 
@@ -235,6 +235,19 @@ const resolvers = {
       posts.push(post);
 
       return post;
+    },
+    deletePost(parent, args, ctx, info) {
+      const postIndex = posts.findIndex(post => post.id === args.id);
+
+      if (postIndex === -1) {
+        throw new Error("Post not found");
+      }
+
+      const deletedPosts = posts.splice(postIndex, 1);
+
+      comments = comments.filter(comment => comment.post !== args.id);
+
+      return deletedPosts[0];
     },
     createComment(parent, args, ctx, info) {
       const userExist = users.some(user => user.id === args.data.author);
